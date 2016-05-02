@@ -66,7 +66,7 @@ apodDecoder =
   Json.at ["explanation"] Json.string
 
 fetchData =
-  Http.get apodDecoder ("https://api.nasa.gov/planetary/apod?api_key=JtYyGRj0iPEje9cmVMNg8O93I6yl8RT4xqCxTJ0D")
+  Http.get apodDecoder ("https://api.nasa.gov/planetary/apod?api_key=")
   |> Task.toResult
 
 fetchDataAsEffects =

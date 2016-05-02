@@ -1,0 +1,20 @@
+Elm.Repl = Elm.Repl || {};
+Elm.Repl.make = function (_elm) {
+   "use strict";
+   _elm.Repl = _elm.Repl || {};
+   if (_elm.Repl.values) return _elm.Repl.values;
+   var _U = Elm.Native.Utils.make(_elm),
+   $Basics = Elm.Basics.make(_elm),
+   $Debug = Elm.Debug.make(_elm),
+   $Http = Elm.Http.make(_elm),
+   $Json$Decode = Elm.Json.Decode.make(_elm),
+   $List = Elm.List.make(_elm),
+   $Maybe = Elm.Maybe.make(_elm),
+   $Result = Elm.Result.make(_elm),
+   $Signal = Elm.Signal.make(_elm);
+   var _op = {};
+   var tsol = {ctor: "_Tuple0"};
+   var task = A2($Http.get,$Json$Decode.list($Json$Decode.string),"https://api.nasa.gov/planetary/apod?api_key=JtYyGRj0iPEje9cmVMNg8O93I6yl8RT4xqCxTJ0D");
+   var deltron3030 = task;
+   return _elm.Repl.values = {_op: _op,deltron3030: deltron3030,task: task,tsol: tsol};
+};

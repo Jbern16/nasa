@@ -12,19 +12,24 @@ type Action
   = NoOp
   | FetchData
   | ErrorOccured String
-  | DataFetched String
+  | DataFetched Data
 
+
+type alias Data =
+  { explanation : String
+  , url : String
+  }
 
 type alias Model =
   { message : String
-  , explanation : String
+  , data : Data
   }
 
 init =
   let
     model =
       { message = "Hello, Elm!"
-      , explanation = ""
+      , data = { explanation = "", url = "" }
       }
   in
     (model, Effects.none)
@@ -34,46 +39,47 @@ update action model =
     NoOp ->
       (model, Effects.none)
     FetchData ->
-      ( {model | message = "Initating data fetch!" }, fetchDataAsEffects)
+      ( { model | message = "Initating data fetch!" }, fetchData)
     ErrorOccured errorMessage ->
       ( { model | message = "Oops! An Error has Occured: " ++ errorMessage }, Effects.none )
-    DataFetched explanation ->
-      ({ model | explanation = explanation, message = "The data has been fetched" }, Effects.none )
+    DataFetched data ->
+      ( { model | data = data, message = "The data has been fetched" }, Effects.none )
 
 
 httpResultToAction result =
   case result of
-    Ok explanation ->
-      DataFetched explanation
+    Ok data ->
+      DataFetched data
     Err err ->
       ErrorOccured (toString err)
 
 view : Signal.Address Action -> Model -> Html
 view address model =
   let
-    showRepo repo =
-      li [ ]
-      [ text ("Explanation:" ++ (toString repo.explanation) )
-      ]
+    data = model.data
   in
-    div []
-      [ div [] [ text model.message ]
+    div [ ]
+      [ div [ ] [ text model.message ]
       , button [ onClick address FetchData ] [ text "Click to load Apod" ]
-      , div [ ] [ text model.explanation ]
+      , div [ ] [ text data.explanation ]
+      , img [ src data.url ] [ ]
       ]
 
 apodDecoder =
-  Json.at ["explanation"] Json.string
+  Json.object2
+    Data
+    ( "explanation" := Json.string )
+    ( "hdurl" := Json.string )
+
 
 fetchData =
   Http.get apodDecoder ("https://api.nasa.gov/planetary/apod?api_key=")
   |> Task.toResult
+  |> Task.map httpResultToAction
+  |> Effects.task
 
-fetchDataAsEffects =
-  fetchData
-    |> Task.map httpResultToAction
-    |> Effects.task
 
+----------------
 
 app = StartApp.start
     { init = init

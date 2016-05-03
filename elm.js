@@ -10992,6 +10992,7 @@ Elm.Main.make = function (_elm) {
    $Debug = Elm.Debug.make(_elm),
    $Effects = Elm.Effects.make(_elm),
    $Html = Elm.Html.make(_elm),
+   $Html$Attributes = Elm.Html.Attributes.make(_elm),
    $Html$Events = Elm.Html.Events.make(_elm),
    $Http = Elm.Http.make(_elm),
    $Json$Decode = Elm.Json.Decode.make(_elm),
@@ -11002,10 +11003,13 @@ Elm.Main.make = function (_elm) {
    $StartApp = Elm.StartApp.make(_elm),
    $Task = Elm.Task.make(_elm);
    var _op = {};
-   var apodDecoder = A2($Json$Decode.at,_U.list(["explanation"]),$Json$Decode.string);
-   var fetchData = $Task.toResult(A2($Http.get,apodDecoder,"https://api.nasa.gov/planetary/apod?api_key=JtYyGRj0iPEje9cmVMNg8O93I6yl8RT4xqCxTJ0D"));
-   var init = function () {    var model = {message: "Hello, Elm!",explanation: ""};return {ctor: "_Tuple2",_0: model,_1: $Effects.none};}();
-   var Model = F2(function (a,b) {    return {message: a,explanation: b};});
+   var init = function () {    var model = {message: "Hello, Elm!",data: {explanation: "",url: ""}};return {ctor: "_Tuple2",_0: model,_1: $Effects.none};}();
+   var Model = F2(function (a,b) {    return {message: a,data: b};});
+   var Data = F2(function (a,b) {    return {explanation: a,url: b};});
+   var apodDecoder = A3($Json$Decode.object2,
+   Data,
+   A2($Json$Decode._op[":="],"explanation",$Json$Decode.string),
+   A2($Json$Decode._op[":="],"hdurl",$Json$Decode.string));
    var DataFetched = function (a) {    return {ctor: "DataFetched",_0: a};};
    var ErrorOccured = function (a) {    return {ctor: "ErrorOccured",_0: a};};
    var httpResultToAction = function (result) {
@@ -11016,27 +11020,28 @@ Elm.Main.make = function (_elm) {
             return ErrorOccured($Basics.toString(_p0._0));
          }
    };
-   var fetchDataAsEffects = $Effects.task(A2($Task.map,httpResultToAction,fetchData));
+   var fetchData = $Effects.task(A2($Task.map,
+   httpResultToAction,
+   $Task.toResult(A2($Http.get,apodDecoder,"https://api.nasa.gov/planetary/apod?api_key=JtYyGRj0iPEje9cmVMNg8O93I6yl8RT4xqCxTJ0D"))));
    var update = F2(function (action,model) {
       var _p1 = action;
       switch (_p1.ctor)
       {case "NoOp": return {ctor: "_Tuple2",_0: model,_1: $Effects.none};
-         case "FetchData": return {ctor: "_Tuple2",_0: _U.update(model,{message: "Initating data fetch!"}),_1: fetchDataAsEffects};
+         case "FetchData": return {ctor: "_Tuple2",_0: _U.update(model,{message: "Initating data fetch!"}),_1: fetchData};
          case "ErrorOccured": return {ctor: "_Tuple2"
                                      ,_0: _U.update(model,{message: A2($Basics._op["++"],"Oops! An Error has Occured: ",_p1._0)})
                                      ,_1: $Effects.none};
-         default: return {ctor: "_Tuple2",_0: _U.update(model,{explanation: _p1._0,message: "The data has been fetched"}),_1: $Effects.none};}
+         default: return {ctor: "_Tuple2",_0: _U.update(model,{data: _p1._0,message: "The data has been fetched"}),_1: $Effects.none};}
    });
    var FetchData = {ctor: "FetchData"};
    var view = F2(function (address,model) {
-      var showRepo = function (repo) {
-         return A2($Html.li,_U.list([]),_U.list([$Html.text(A2($Basics._op["++"],"Explanation:",$Basics.toString(repo.explanation)))]));
-      };
+      var data = model.data;
       return A2($Html.div,
       _U.list([]),
       _U.list([A2($Html.div,_U.list([]),_U.list([$Html.text(model.message)]))
               ,A2($Html.button,_U.list([A2($Html$Events.onClick,address,FetchData)]),_U.list([$Html.text("Click to load Apod")]))
-              ,A2($Html.div,_U.list([]),_U.list([$Html.text(model.explanation)]))]));
+              ,A2($Html.div,_U.list([]),_U.list([$Html.text(data.explanation)]))
+              ,A2($Html.img,_U.list([$Html$Attributes.src(data.url)]),_U.list([]))]));
    });
    var app = $StartApp.start({init: init,update: update,view: view,inputs: _U.list([])});
    var main = app.html;
@@ -11047,14 +11052,14 @@ Elm.Main.make = function (_elm) {
                              ,FetchData: FetchData
                              ,ErrorOccured: ErrorOccured
                              ,DataFetched: DataFetched
+                             ,Data: Data
                              ,Model: Model
-                             ,app: app
-                             ,main: main
                              ,init: init
                              ,update: update
                              ,httpResultToAction: httpResultToAction
                              ,view: view
                              ,apodDecoder: apodDecoder
                              ,fetchData: fetchData
-                             ,fetchDataAsEffects: fetchDataAsEffects};
+                             ,app: app
+                             ,main: main};
 };
